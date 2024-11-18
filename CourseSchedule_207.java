@@ -1,29 +1,42 @@
 class Solution {
-    long lower_bound(int[] nums, int low, int high, int element) {
-        while (low <= high) {
-            int mid = low + ((high - low) / 2);
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
 
-            if (nums[mid] >= element) {
-                high = mid - 1;
-            } else {
-                low = mid + 1;
+        List<Integer>[] adj = new List[numCourses];
+        int[] indegree = new int[numCourses];
+
+        for (int[] pair : prerequisites) {
+            int course = pair[0];
+            int prerequisite = pair[1];
+            if (adj[prerequisite] == null) {
+                adj[prerequisite] = new ArrayList<>();
+            }
+            adj[prerequisite].add(course); // build adjaceny list from matrix
+            indegree[course]++; // calculate the number of incoming edges
+        }
+
+        Queue<Integer> q = new LinkedList<>();
+        for (int i = 0; i < numCourses; i++) {
+            // initialize queue by adding all nodes with indegree 0
+            if (indegree[i] == 0) {
+                q.offer(i);
             }
         }
-        return low;
-    }
 
-    public long countFairPairs(int[] nums, int lower, int upper) {
-        Arrays.sort(nums);
-        // 0 1 4 4 5 7
+        int visitCount = 0;
 
-        long ans = 0;
+        while (!q.isEmpty()) {
+            int node = q.poll();
+            visitCount++;
 
-        for (int i = 0; i < nums.length; i++) {
-            long low = lower_bound(nums, i + 1, nums.length - 1, lower - nums[i]);
-            long high = lower_bound(nums, i + 1, nums.length - 1, upper - nums[i] + 1);
-
-            ans += high - low;
+            if (adj[node] != null) {
+                for (int neighbour : adj[node]) {
+                    indegree[neighbour]--;
+                    if (indegree[neighbour] == 0) {
+                        q.offer(neighbour);
+                    }
+                }
+            }
         }
-        return ans;
+        return visitCount == numCourses;
     }
 }
